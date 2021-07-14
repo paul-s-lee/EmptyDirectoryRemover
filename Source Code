@@ -1,0 +1,92 @@
+using System;
+using System.IO;
+using System.Linq;
+
+namespace EmptyDirectoryRemover
+{
+    class Program
+    {
+        private static int EmptyFolders = 0;
+        private static void ProcessDirectory(string StartLocation)
+        {
+            foreach (var directory in Directory.GetDirectories(StartLocation))
+            {
+                try
+                {
+                    ProcessDirectory(directory);
+                    if (Directory.GetFiles(directory).Length == 0 &&
+                    Directory.GetDirectories(directory).Length == 0)
+                    {
+                        ++EmptyFolders;
+                        Console.WriteLine(directory.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Access Denied");
+                }
+
+            }
+        }
+
+        private static int AccessDeniedCounter = 0;
+        private static int AccessGrantedCounter = 0;
+        private static void DeleteDirectory(string StartLocation)
+        {
+            foreach (var directory in Directory.GetDirectories(StartLocation))
+            {
+                try
+                {
+                    DeleteDirectory(directory);
+                    if (Directory.GetFiles(directory).Length == 0 &&
+                        Directory.GetDirectories(directory).Length == 0)
+                    {
+                        Console.WriteLine("Deleting: " + directory.ToString());
+                        Directory.Delete(directory, false);
+                        ++AccessGrantedCounter;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Access Denied");
+                    ++AccessDeniedCounter;
+                }
+            }
+        }
+        static void Main(string[] args)
+        {
+            bool RepeatMenu = true;
+            while (RepeatMenu == true)
+            {
+                Console.WriteLine("Menu: ");
+                Console.WriteLine("1 - Find Empty Folders");
+                Console.WriteLine("2 - Delete Empty Folders");
+                Console.Write("Enter option: ");
+                int Option = Convert.ToInt32(Console.ReadLine());
+                if (Option == 1)
+                {
+                    Console.Write("Enter directory path: ");
+                    string FolderPath = Console.ReadLine();
+                    ProcessDirectory(FolderPath);
+                    Console.WriteLine("Finished!");
+                    Console.WriteLine("Total Empty Folders Found:" + EmptyFolders);
+                }
+                else if (Option == 2)
+                {
+                    Console.WriteLine("Enter directory path: ");
+                    string FolderPath = Console.ReadLine();
+                    DeleteDirectory(FolderPath);
+                    Console.WriteLine("Finished!");
+                    Console.WriteLine("Total Empty Folders Deleted: " + AccessGrantedCounter);
+                    Console.WriteLine("Could NOT Delete: " + AccessDeniedCounter);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Option!");
+                    continue;
+                }
+            }
+            
+        }
+    }
+}
